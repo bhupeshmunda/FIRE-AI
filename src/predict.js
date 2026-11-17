@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 export const DELAY_PERCENTILE = 0.8; // 80th percentile of historical delays
 export const MIN_ROWS = 10;          // Minimum valid rows required to make a prediction
 export const EXPECTED_COLUMNS = 10;  // Number of columns required in data.csv
+export const MAX_NOTES_LENGTH = 200; // Maximum allowed characters for Notes
 export const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 const WEEKDAYS = [
@@ -23,16 +24,17 @@ const __dirname = path.dirname(__filename);
 export const DEFAULT_CSV_PATH = path.join(__dirname, "..", "data.csv");
 
 // Parse a YYYY-MM-DD string strictly into a UTC Date object
-function parseStrictDate(dateStr) {
-  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
+export function parseStrictDate(dateStr) {
+  if (typeof dateStr !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
     return null;
   }
-  const date = new Date(`${dateStr.trim()}T00:00:00Z`);
+  const clean = dateStr.trim();
+  const date = new Date(`${clean}T00:00:00Z`);
   if (isNaN(date.getTime())) {
     return null;
   }
   // Ensure month/day did not roll over (e.g. 2026-02-31)
-  if (date.toISOString().slice(0, 10) !== dateStr.trim()) {
+  if (date.toISOString().slice(0, 10) !== clean) {
     return null;
   }
   return date;
@@ -57,8 +59,9 @@ export function loadAndValidateRows(csvPath = DEFAULT_CSV_PATH) {
     return { validRows: [], skippedRows: [], fileMissing: true };
   }
 
-  const rawContent = fs.readFileSync(csvPath, "utf-8").trim();
-  if (!rawContent) {
+  // Strip only leading/trailing newlines, NOT tabs (an empty Notes column ends with \t)
+  const rawContent = fs.readFileSync(csvPath, "utf-8").replace(/^[\r\n]+|[\r\n]+$/g, "");
+  if (!rawContent.trim()) {
     console.warn(`[LaundryTrack] Warning: CSV file is empty at ${csvPath}`);
     return { validRows: [], skippedRows: [], fileMissing: false };
   }
@@ -88,7 +91,7 @@ export function loadAndValidateRows(csvPath = DEFAULT_CSV_PATH) {
 
     const row = {};
     headers.forEach((header, idx) => {
-      row[header] = values[idx] ? values[idx].trim() : "";
+      row[header] = values[idx] !== undefined ? values[idx].trim() : "";
     });
 
     const subDate = parseStrictDate(row.Submission_Date);
@@ -133,7 +136,148 @@ export function loadAndValidateRows(csvPath = DEFAULT_CSV_PATH) {
   return { validRows, skippedRows, fileMissing: false };
 }
 
-// 2. Compute historical statistics from valid rows
+// 2. Validate and append a new outcome row to data.csv
+export function validateOutcome(input = {}, csvPath = DEFAULT_CSV_PATH) {
+  const errors = [];
+
+  const studentId = String(input.Student_ID ?? "").trim();
+  const tokenId = String(input.Token_ID ?? "").trim();
+  const subDateStr = String(input.Submission_Date ?? "").trim();
+  const expDateStr = String(input.Expected_Collection_Date ?? "").trim();
+  const readyDateStr = String(input.Actual_Ready_Date ?? "").trim();
+  const colDateStr = String(input.Actual_Collection_Date ?? "").trim();
+  const visitsStr = String(input.Counter_Visits ?? "").trim();
+  const closedStr = String(input.Found_Shop_Closed ?? "").trim();
+  const readyWhenVisitedStr = String(input.Was_Ready_When_Visited ?? "").trim();
+  // Replace tabs and newlines with spaces in Notes
+  const cleanNotes = String(input.Notes ?? "")
+    .replace(/[\r\n\t]+/g, " ")
+    .trim();
+
+  // 1. Student_ID matches S\d{3}
+  if (!/^S\d{3}$/.test(studentId)) {
+    errors.push("Student_ID must match format S followed by 3 digits (e.g., S021).");
+  }
+
+  // 2. Token_ID matches LT\d{4}
+  if (!/^LT\d{4}$/.test(tokenId)) {
+    errors.push("Token_ID must match format LT followed by 4 digits (e.g., LT1021).");
+  } else if (fs.existsSync(csvPath)) {
+    // Check for duplicate Token_ID in data.csv
+    const raw = fs.readFileSync(csvPath, "utf-8").replace(/^[\r\n]+|[\r\n]+$/g, "");
+    const lines = raw ? raw.split(/\r?\n/).slice(1) : [];
+    const tokenExists = lines.some((line) => {
+      const cols = line.split("\t");
+      return cols[1] && cols[1].trim() === tokenId;
+    });
+    if (tokenExists) {
+      errors.push(`Token_ID ${tokenId} already exists in data.csv (duplicates are not allowed).`);
+    }
+  }
+
+  // 3. All four dates are real calendar dates in YYYY-MM-DD format
+  const subDate = parseStrictDate(subDateStr);
+  const expDate = parseStrictDate(expDateStr);
+  const readyDate = parseStrictDate(readyDateStr);
+  const colDate = parseStrictDate(colDateStr);
+
+  if (!subDate) {
+    errors.push("Submission_Date must be a valid calendar date in YYYY-MM-DD format.");
+  }
+  if (!expDate) {
+    errors.push("Expected_Collection_Date must be a valid calendar date in YYYY-MM-DD format.");
+  }
+  if (!readyDate) {
+    errors.push("Actual_Ready_Date must be a valid calendar date in YYYY-MM-DD format.");
+  }
+  if (!colDate) {
+    errors.push("Actual_Collection_Date must be a valid calendar date in YYYY-MM-DD format.");
+  }
+
+  // 4. Date ordering checks
+  if (subDate && expDate && diffInDays(expDate, subDate) < 0) {
+    errors.push("Expected_Collection_Date must be on or after Submission_Date.");
+  }
+  if (subDate && readyDate && diffInDays(readyDate, subDate) < 0) {
+    errors.push("Actual_Ready_Date must be on or after Submission_Date.");
+  }
+  if (readyDate && colDate && diffInDays(colDate, readyDate) < 0) {
+    errors.push("Actual_Collection_Date must be on or after Actual_Ready_Date.");
+  }
+
+  // 5. Counter_Visits is a whole number >= 1
+  if (!/^\d+$/.test(visitsStr) || Number(visitsStr) < 1) {
+    errors.push("Counter_Visits must be a whole number greater than or equal to 1.");
+  }
+
+  // 6. Found_Shop_Closed and Was_Ready_When_Visited are exactly "Yes" or "No"
+  if (closedStr !== "Yes" && closedStr !== "No") {
+    errors.push('Found_Shop_Closed must be exactly "Yes" or "No".');
+  }
+  if (readyWhenVisitedStr !== "Yes" && readyWhenVisitedStr !== "No") {
+    errors.push('Was_Ready_When_Visited must be exactly "Yes" or "No".');
+  }
+
+  // 7. Notes is optional, max 200 characters
+  if (cleanNotes.length > MAX_NOTES_LENGTH) {
+    errors.push(`Notes must be at most ${MAX_NOTES_LENGTH} characters (got ${cleanNotes.length}).`);
+  }
+
+  // Build the exact 10-element array so empty Notes still produces a trailing tab
+  const fields = [
+    studentId,
+    tokenId,
+    subDateStr,
+    expDateStr,
+    readyDateStr,
+    colDateStr,
+    visitsStr,
+    closedStr,
+    readyWhenVisitedStr,
+    cleanNotes, // "" when empty -> join("\t") keeps the 9th tab (10 fields total)
+  ];
+
+  const rowObject = {
+    Student_ID: studentId,
+    Token_ID: tokenId,
+    Submission_Date: subDateStr,
+    Expected_Collection_Date: expDateStr,
+    Actual_Ready_Date: readyDateStr,
+    Actual_Collection_Date: colDateStr,
+    Counter_Visits: visitsStr,
+    Found_Shop_Closed: closedStr,
+    Was_Ready_When_Visited: readyWhenVisitedStr,
+    Notes: cleanNotes,
+  };
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    fields,
+    tsvLine: fields.join("\t"),
+    row: rowObject,
+  };
+}
+
+export function appendOutcomeRow(input, csvPath = DEFAULT_CSV_PATH) {
+  const check = validateOutcome(input, csvPath);
+  if (!check.valid) {
+    return check;
+  }
+
+  // Ensure existing file ends with "\n" before appending so we never join onto the last line
+  if (fs.existsSync(csvPath)) {
+    const existing = fs.readFileSync(csvPath, "utf-8");
+    if (existing.length > 0 && !existing.endsWith("\n")) {
+      fs.appendFileSync(csvPath, "\n", "utf-8");
+    }
+  }
+
+  fs.appendFileSync(csvPath, `${check.tsvLine}\n`, "utf-8");
+  return check;
+}
+
+// 3. Compute historical statistics from valid rows
 export function computeStats(validRows) {
   if (!validRows || validRows.length < MIN_ROWS) {
     return {
@@ -196,7 +340,7 @@ export function computeStats(validRows) {
   };
 }
 
-// 3. Predict readiness and recommended visit date for a single order
+// 4. Predict readiness and recommended visit date for a single order
 export function predictOrder({ Submission_Date, Expected_Collection_Date }, stats) {
   const subDate = parseStrictDate(Submission_Date);
   if (!subDate) {

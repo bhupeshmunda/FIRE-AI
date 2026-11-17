@@ -1,4 +1,3 @@
-import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
@@ -7,6 +6,7 @@ import {
   loadAndValidateRows,
   computeStats,
   predictOrder,
+  appendOutcomeRow,
 } from "./predict.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -81,41 +81,31 @@ export const predictLaundry = (req, res) => {
 export const renderOutcomeForm = (req, res) => {
   res.render("outcome", {
     title: "Record Actual Laundry Outcome",
+    errors: [],
+    savedRow: null,
+    formData: {},
   });
 };
 
-// POST /outcome -> Append completed order outcome to data.csv
+// POST /outcome -> Validate first, then append completed order outcome to data.csv
 export const saveOutcome = (req, res) => {
-  const {
-    Student_ID,
-    Token_ID,
-    Submission_Date,
-    Expected_Collection_Date,
-    Actual_Ready_Date,
-    Actual_Collection_Date,
-    Counter_Visits,
-    Found_Shop_Closed,
-    Was_Ready_When_Visited,
-    Notes,
-  } = req.body;
+  const result = appendOutcomeRow(req.body, DEFAULT_CSV_PATH);
 
-  const cleanNotes = (Notes || "").replace(/[\r\n\t]+/g, " ").trim();
+  if (!result.valid) {
+    return res.status(400).render("outcome", {
+      title: "Record Actual Laundry Outcome",
+      errors: result.errors,
+      savedRow: null,
+      formData: req.body || {},
+    });
+  }
 
-  const newRow = [
-    (Student_ID || "").trim(),
-    (Token_ID || "").trim(),
-    (Submission_Date || "").trim(),
-    (Expected_Collection_Date || "").trim(),
-    (Actual_Ready_Date || "").trim(),
-    (Actual_Collection_Date || "").trim(),
-    (Counter_Visits || "1").toString().trim(),
-    Found_Shop_Closed === "Yes" ? "Yes" : "No",
-    Was_Ready_When_Visited === "Yes" ? "Yes" : "No",
-    cleanNotes,
-  ].join("\t");
-
-  fs.appendFileSync(DEFAULT_CSV_PATH, `\n${newRow}`, "utf-8");
-  res.redirect("/records?saved=true");
+  res.render("outcome", {
+    title: "Record Actual Laundry Outcome",
+    errors: [],
+    savedRow: result.row,
+    formData: {},
+  });
 };
 
 // GET /records -> Show valid rows and any skipped bad rows

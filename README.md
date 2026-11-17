@@ -51,7 +51,7 @@ Why 23 and not 22: in `data.csv`, 9 of 20 orders (45%) were ready one day later 
 TODO: paste the exact text shown on the app's result page (or a screenshot link) from your own run
 ```
 
-Demo recording (3 minutes): TODO: link
+Demo recording (3 minutes): https://drive.google.com/file/d/1E8IvmhkkCq04c2sOEHzI5Ah_mCoimh8N/view?usp=sharing
 
 ## 5. What It Gets Wrong
 

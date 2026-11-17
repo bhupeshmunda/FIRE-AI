@@ -2,6 +2,58 @@
 
 <div class="row justify-content-center">
   <div class="col-lg-7">
+    <% if (errors && errors.length > 0) { %>
+      <div class="alert alert-danger border-danger shadow-sm rounded-3 mb-4" role="alert">
+        <h6 class="fw-bold mb-2">Please fix the following problem(s) before saving:</h6>
+        <ul class="mb-0 small">
+          <% errors.forEach((err) => { %>
+            <li><%= err %></li>
+          <% }) %>
+        </ul>
+      </div>
+    <% } %>
+
+    <% if (savedRow) { %>
+      <div class="alert alert-success border-success shadow-sm rounded-3 mb-4" role="alert">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold mb-0">Row validated and saved to <code>data.csv</code></h6>
+          <a href="/records" class="btn btn-sm btn-success">View All Records →</a>
+        </div>
+        <div class="table-responsive bg-white rounded border mt-2">
+          <table class="table table-sm table-bordered mb-0 small">
+            <thead class="table-light">
+              <tr>
+                <th>Student_ID</th>
+                <th>Token_ID</th>
+                <th>Submitted</th>
+                <th>Expected</th>
+                <th>Actual Ready</th>
+                <th>Collected</th>
+                <th>Visits</th>
+                <th>Closed</th>
+                <th>Ready</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fw-semibold"><%= savedRow.Student_ID %></td>
+                <td><%= savedRow.Token_ID %></td>
+                <td><%= savedRow.Submission_Date %></td>
+                <td><%= savedRow.Expected_Collection_Date %></td>
+                <td><%= savedRow.Actual_Ready_Date %></td>
+                <td><%= savedRow.Actual_Collection_Date %></td>
+                <td><%= savedRow.Counter_Visits %></td>
+                <td><%= savedRow.Found_Shop_Closed %></td>
+                <td><%= savedRow.Was_Ready_When_Visited %></td>
+                <td><%= savedRow.Notes || '(empty)' %></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+
     <div class="card border-0 shadow-sm rounded-4">
       <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
         <div>
@@ -14,28 +66,30 @@
       </div>
 
       <div class="card-body p-4">
-        <form action="/outcome" method="POST">
+        <form action="/outcome" method="POST" novalidate>
           <div class="row g-3">
             <div class="col-md-6">
-              <label for="Student_ID" class="form-label fw-semibold small">Student ID</label>
+              <label for="Student_ID" class="form-label fw-semibold small">Student ID (<code>S\d{3}</code>)</label>
               <input
                 type="text"
                 class="form-control"
                 id="Student_ID"
                 name="Student_ID"
                 placeholder="e.g., S021"
+                value="<%= formData.Student_ID || '' %>"
                 required
               />
             </div>
 
             <div class="col-md-6">
-              <label for="Token_ID" class="form-label fw-semibold small">Token ID</label>
+              <label for="Token_ID" class="form-label fw-semibold small">Token ID (<code>LT\d{4}</code>)</label>
               <input
                 type="text"
                 class="form-control"
                 id="Token_ID"
                 name="Token_ID"
                 placeholder="e.g., LT1021"
+                value="<%= formData.Token_ID || '' %>"
                 required
               />
             </div>
@@ -47,6 +101,7 @@
                 class="form-control"
                 id="Submission_Date"
                 name="Submission_Date"
+                value="<%= formData.Submission_Date || '' %>"
                 required
               />
             </div>
@@ -58,6 +113,7 @@
                 class="form-control"
                 id="Expected_Collection_Date"
                 name="Expected_Collection_Date"
+                value="<%= formData.Expected_Collection_Date || '' %>"
                 required
               />
             </div>
@@ -69,6 +125,7 @@
                 class="form-control"
                 id="Actual_Ready_Date"
                 name="Actual_Ready_Date"
+                value="<%= formData.Actual_Ready_Date || '' %>"
                 required
               />
             </div>
@@ -80,6 +137,7 @@
                 class="form-control"
                 id="Actual_Collection_Date"
                 name="Actual_Collection_Date"
+                value="<%= formData.Actual_Collection_Date || '' %>"
                 required
               />
             </div>
@@ -90,7 +148,7 @@
                 type="number"
                 min="1"
                 max="15"
-                value="1"
+                value="<%= formData.Counter_Visits || '1' %>"
                 class="form-control"
                 id="Counter_Visits"
                 name="Counter_Visits"
@@ -101,28 +159,31 @@
             <div class="col-md-4">
               <label for="Found_Shop_Closed" class="form-label fw-semibold small">Found Shop Closed?</label>
               <select class="form-select" id="Found_Shop_Closed" name="Found_Shop_Closed">
-                <option value="No" selected>No</option>
-                <option value="Yes">Yes</option>
+                <option value="No" <%= formData.Found_Shop_Closed !== 'Yes' ? 'selected' : '' %>>No</option>
+                <option value="Yes" <%= formData.Found_Shop_Closed === 'Yes' ? 'selected' : '' %>>Yes</option>
               </select>
             </div>
 
             <div class="col-md-4">
               <label for="Was_Ready_When_Visited" class="form-label fw-semibold small">Was Ready When Visited?</label>
               <select class="form-select" id="Was_Ready_When_Visited" name="Was_Ready_When_Visited">
-                <option value="Yes" selected>Yes</option>
-                <option value="No">No</option>
+                <option value="Yes" <%= formData.Was_Ready_When_Visited !== 'No' ? 'selected' : '' %>>Yes</option>
+                <option value="No" <%= formData.Was_Ready_When_Visited === 'No' ? 'selected' : '' %>>No</option>
               </select>
             </div>
 
             <div class="col-12">
-              <label for="Notes" class="form-label fw-semibold small">Notes</label>
+              <label for="Notes" class="form-label fw-semibold small">
+                Notes <span class="text-muted fw-normal">(Optional, max 200 chars)</span>
+              </label>
               <textarea
                 class="form-control"
                 id="Notes"
                 name="Notes"
+                maxlength="200"
                 rows="2"
                 placeholder="e.g., Ready on the expected date; collected next morning."
-              ></textarea>
+              ><%= formData.Notes || '' %></textarea>
             </div>
 
             <div class="col-12 pt-2">
