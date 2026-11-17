@@ -1,0 +1,21 @@
+Student_ID	Token_ID	Submission_Date	Expected_Collection_Date	Actual_Ready_Date	Actual_Collection_Date	Counter_Visits	Found_Shop_Closed	Was_Ready_When_Visited	Notes
+S001	LT1001	2026-10-20	2026-10-23	2026-10-23	2026-10-24	2	No	No	Ready on the expected date; collected next morning.
+S002	LT1002	2026-10-20	2026-10-24	2026-10-25	2026-10-25	3	No	No	Processing took one extra day.
+S003	LT1003	2026-10-21	2026-10-24	2026-10-24	2026-10-26	2	No	Yes	Clothes were ready during the second visit.
+S004	LT1004	2026-10-22	2026-10-25	2026-10-26	2026-10-27	2	Yes	No	First visit was on a closed day.
+S005	LT1005	2026-10-22	2026-10-25	2026-10-25	2026-10-25	1	No	Yes	Collected on first visit.
+S006	LT1006	2026-10-23	2026-10-27	2026-10-27	2026-10-29	2	No	Yes	Ready earlier than collection.
+S007	LT1007	2026-10-24	2026-10-28	2026-10-29	2026-10-29	2	No	No	Had to return the following day.
+S008	LT1008	2026-10-24	2026-10-28	2026-10-28	2026-10-28	1	No	Yes	No issue reported.
+S009	LT1009	2026-10-26	2026-10-29	2026-10-30	2026-10-31	3	No	No	Visited before clothes were ready.
+S010	LT1010	2026-10-27	2026-10-30	2026-10-30	2026-10-30	1	No	Yes	Collected on the first visit.
+S011	LT1011	2026-10-28	2026-11-01	2026-11-02	2026-11-03	2	Yes	No	Shop was closed during one attempted visit.
+S012	LT1012	2026-10-29	2026-11-01	2026-11-01	2026-11-02	2	No	Yes	Ready on the expected date.
+S013	LT1013	2026-10-30	2026-11-03	2026-11-04	2026-11-04	2	No	No	One-day delay in readiness.
+S014	LT1014	2026-10-31	2026-11-04	2026-11-04	2026-11-05	2	No	Yes	Collected the day after it was ready.
+S015	LT1015	2026-11-02	2026-11-05	2026-11-05	2026-11-05	1	No	Yes	No additional visit required.
+S016	LT1016	2026-11-03	2026-11-06	2026-11-07	2026-11-08	3	Yes	No	One attempted visit coincided with shop closure.
+S017	LT1017	2026-11-04	2026-11-08	2026-11-08	2026-11-09	2	No	Yes	Ready on expected date.
+S018	LT1018	2026-11-05	2026-11-08	2026-11-09	2026-11-10	2	No	No	Collected after checking twice.
+S019	LT1019	2026-11-06	2026-11-10	2026-11-10	2026-11-11	2	No	Yes	Ready on expected date.
+S020	LT1020	2026-11-07	2026-11-11	2026-11-12	2026-11-12	2	No	No	One-day processing delay.
