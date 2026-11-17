@@ -1,0 +1,164 @@
+<% layout('layout/boilerplate') %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-1 fw-bold text-primary">Enter Laundry Details</h5>
+          <p class="text-muted small mb-0">
+            Fill in the student laundry fields (matching <code>data.csv</code>) to check estimated readiness or record a submission.
+          </p>
+        </div>
+        <a href="/records" class="btn btn-sm btn-outline-primary fw-semibold">View Recorded Data</a>
+      </div>
+      <div class="card-body p-4">
+        <form action="/prediction" method="POST">
+          <div class="row g-3">
+            <!-- Student_ID -->
+            <div class="col-md-6">
+              <label for="Student_ID" class="form-label fw-semibold small">Student ID (<code>Student_ID</code>)</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Student_ID"
+                name="Student_ID"
+                placeholder="e.g., S021"
+                required
+              />
+            </div>
+
+            <!-- Token_ID -->
+            <div class="col-md-6">
+              <label for="Token_ID" class="form-label fw-semibold small">Token ID (<code>Token_ID</code>)</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Token_ID"
+                name="Token_ID"
+                placeholder="e.g., LT1021"
+                required
+              />
+            </div>
+
+            <!-- Submission_Date -->
+            <div class="col-md-6">
+              <label for="Submission_Date" class="form-label fw-semibold small">Submission Date</label>
+              <input
+                type="date"
+                class="form-control"
+                id="Submission_Date"
+                name="Submission_Date"
+                required
+              />
+            </div>
+
+            <!-- Expected_Collection_Date -->
+            <div class="col-md-6">
+              <label for="Expected_Collection_Date" class="form-label fw-semibold small">Expected Collection Date</label>
+              <input
+                type="date"
+                class="form-control"
+                id="Expected_Collection_Date"
+                name="Expected_Collection_Date"
+                required
+              />
+            </div>
+
+            <!-- Actual_Ready_Date -->
+            <div class="col-md-6">
+              <label for="Actual_Ready_Date" class="form-label fw-semibold small">
+                Actual Ready Date <span class="text-muted fw-normal">(Optional)</span>
+              </label>
+              <input
+                type="date"
+                class="form-control"
+                id="Actual_Ready_Date"
+                name="Actual_Ready_Date"
+              />
+            </div>
+
+            <!-- Actual_Collection_Date -->
+            <div class="col-md-6">
+              <label for="Actual_Collection_Date" class="form-label fw-semibold small">
+                Actual Collection Date <span class="text-muted fw-normal">(Optional)</span>
+              </label>
+              <input
+                type="date"
+                class="form-control"
+                id="Actual_Collection_Date"
+                name="Actual_Collection_Date"
+              />
+            </div>
+
+            <!-- Counter_Visits -->
+            <div class="col-md-4">
+              <label for="Counter_Visits" class="form-label fw-semibold small">Counter Visits</label>
+              <input
+                type="number"
+                min="0"
+                max="10"
+                value="1"
+                class="form-control"
+                id="Counter_Visits"
+                name="Counter_Visits"
+              />
+            </div>
+
+            <!-- Found_Shop_Closed -->
+            <div class="col-md-4">
+              <label for="Found_Shop_Closed" class="form-label fw-semibold small">Shop Closed?</label>
+              <select class="form-select" id="Found_Shop_Closed" name="Found_Shop_Closed">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+
+            <!-- Was_Ready_When_Visited -->
+            <div class="col-md-4">
+              <label for="Was_Ready_When_Visited" class="form-label fw-semibold small">Ready on Visit?</label>
+              <select class="form-select" id="Was_Ready_When_Visited" name="Was_Ready_When_Visited">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+
+            <!-- Notes -->
+            <div class="col-12">
+              <label for="Notes" class="form-label fw-semibold small">Notes (<code>Notes</code>)</label>
+              <textarea
+                class="form-control"
+                id="Notes"
+                name="Notes"
+                rows="2"
+                placeholder="Any remarks about processing delay, shop timings, or collection..."
+              ></textarea>
+            </div>
+
+            <!-- Save to CSV toggle -->
+            <div class="col-12">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  value="yes"
+                  id="saveToCsv"
+                  name="saveToCsv"
+                />
+                <label class="form-check-label small text-muted" for="saveToCsv">
+                  Also append this entry to <code>data.csv</code>
+                </label>
+              </div>
+            </div>
+
+            <div class="col-12 pt-2">
+              <button type="submit" class="btn btn-primary w-100 fw-semibold py-2">
+                Check Readiness &amp; Predict Collection Date
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

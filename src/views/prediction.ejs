@@ -1,0 +1,85 @@
+<% layout('layout/boilerplate') %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-header bg-primary text-white py-3 px-4 rounded-top-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-0 fw-bold">LaundryTrack Readiness Prediction</h5>
+          <small class="opacity-75">Token: <%= formData.Token_ID %> &bull; Student: <%= formData.Student_ID %></small>
+        </div>
+        <a href="/" class="btn btn-sm btn-light fw-semibold">← Back to Home</a>
+      </div>
+
+      <div class="card-body p-4">
+        <!-- Key Prediction Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <div class="text-muted small fw-medium">Shop Expected Date</div>
+              <div class="fs-5 fw-bold text-dark mt-1"><%= prediction.expectedDate %></div>
+              <small class="text-muted">Initial date given by counter</small>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="p-3 bg-warning-subtle rounded-3 border border-warning-subtle h-100">
+              <div class="text-warning-emphasis small fw-medium">Estimated Ready Date</div>
+              <div class="fs-5 fw-bold text-dark mt-1"><%= prediction.predictedReadyDate %></div>
+              <small class="text-muted">Includes +1 day buffer (<%= prediction.delayRate %>% delay rate)</small>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="p-3 bg-success-subtle rounded-3 border border-success-subtle h-100">
+              <div class="text-success-emphasis small fw-medium">Recommended Visit Date</div>
+              <div class="fs-5 fw-bold text-success mt-1"><%= prediction.recommendedVisitDate %></div>
+              <small class="text-muted">
+                <%= prediction.SundayAdjusted ? 'Adjusted for Sunday shop closure' : 'Shop open (4:00 PM – 6:00 PM)' %>
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submitted CSV Details Summary -->
+        <h6 class="fw-bold mb-3">Submitted Laundry Record Details</h6>
+        <div class="table-responsive">
+          <table class="table table-bordered small mb-0">
+            <tbody>
+              <tr>
+                <th class="bg-light w-25">Student ID</th>
+                <td><%= formData.Student_ID %></td>
+                <th class="bg-light w-25">Token ID</th>
+                <td><%= formData.Token_ID %></td>
+              </tr>
+              <tr>
+                <th class="bg-light">Submission Date</th>
+                <td><%= formData.Submission_Date %></td>
+                <th class="bg-light">Expected Collection Date</th>
+                <td><%= formData.Expected_Collection_Date %></td>
+              </tr>
+              <tr>
+                <th class="bg-light">Actual Ready Date</th>
+                <td><%= formData.Actual_Ready_Date || 'Pending' %></td>
+                <th class="bg-light">Actual Collection Date</th>
+                <td><%= formData.Actual_Collection_Date || 'Pending' %></td>
+              </tr>
+              <tr>
+                <th class="bg-light">Counter Visits</th>
+                <td><%= formData.Counter_Visits %></td>
+                <th class="bg-light">Found Shop Closed</th>
+                <td><%= formData.Found_Shop_Closed %></td>
+              </tr>
+              <tr>
+                <th class="bg-light">Was Ready When Visited</th>
+                <td><%= formData.Was_Ready_When_Visited %></td>
+                <th class="bg-light">Notes</th>
+                <td><%= formData.Notes || '—' %></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

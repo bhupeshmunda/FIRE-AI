@@ -1,0 +1,67 @@
+<% layout('layout/boilerplate') %>
+
+<div class="card border-0 shadow-sm rounded-4">
+  <div class="card-header bg-white border-bottom py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>
+      <h5 class="mb-0 fw-bold text-primary">Recorded Laundry Dataset (<code>data.csv</code>)</h5>
+      <p class="text-muted small mb-0">Historical student laundry logs used for readiness prediction</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+        <%= records ? records.length : 0 %> Records
+      </span>
+      <a href="/" class="btn btn-sm btn-outline-primary fw-semibold">+ New Entry / Predict</a>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">Student ID</th>
+            <th>Token ID</th>
+            <th>Submission Date</th>
+            <th>Expected Date</th>
+            <th>Actual Ready</th>
+            <th>Collected Date</th>
+            <th class="text-center">Counter Visits</th>
+            <th>Shop Closed?</th>
+            <th>Ready on Visit?</th>
+            <th class="pe-4">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (records && records.length > 0) { %>
+            <% records.forEach((row) => { %>
+              <tr>
+                <td class="ps-4 fw-semibold"><%= row.Student_ID %></td>
+                <td><span class="badge bg-secondary-subtle text-secondary"><%= row.Token_ID %></span></td>
+                <td><%= row.Submission_Date %></td>
+                <td><%= row.Expected_Collection_Date %></td>
+                <td><%= row.Actual_Ready_Date %></td>
+                <td><%= row.Actual_Collection_Date %></td>
+                <td class="text-center"><%= row.Counter_Visits %></td>
+                <td>
+                  <span class="badge <%= row.Found_Shop_Closed === 'Yes' ? 'bg-danger-subtle text-danger' : 'bg-light text-dark' %>">
+                    <%= row.Found_Shop_Closed %>
+                  </span>
+                </td>
+                <td>
+                  <span class="badge <%= row.Was_Ready_When_Visited === 'Yes' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning-emphasis' %>">
+                    <%= row.Was_Ready_When_Visited %>
+                  </span>
+                </td>
+                <td class="pe-4 text-muted"><%= row.Notes || '—' %></td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="10" class="text-center text-muted py-4">No records found in data.csv</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
