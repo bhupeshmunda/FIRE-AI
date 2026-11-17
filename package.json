@@ -1,0 +1,14 @@
+{
+  "name": "laundrytrack",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "ejs": "^7.0.2",
+    "ejs-mate": "^4.0.0",
+    "express": "^5.3.0",
+    "nodemon": "^3.1.14"
+  }
+}
