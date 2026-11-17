@@ -1,16 +1,48 @@
 <% layout('layout/boilerplate') %>
 
+<% if (saved) { %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    New laundry outcome has been appended to <code>data.csv</code>.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<% if (skippedRows && skippedRows.length > 0) { %>
+  <div class="alert alert-warning border-warning shadow-sm rounded-3 mb-4">
+    <h6 class="fw-bold mb-2">
+      Skipped <%= skippedRows.length %> Invalid Row(s) in <code><%= sourceLabel %></code>
+    </h6>
+    <ul class="mb-0 small">
+      <% skippedRows.forEach((item) => { %>
+        <li>
+          <strong>Row <%= item.rowNumber %>:</strong> <%= item.reason %>
+          <code class="ms-1 text-dark">(<%= item.raw %>)</code>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
 <div class="card border-0 shadow-sm rounded-4">
   <div class="card-header bg-white border-bottom py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
     <div>
-      <h5 class="mb-0 fw-bold text-primary">Recorded Laundry Dataset (<code>data.csv</code>)</h5>
-      <p class="text-muted small mb-0">Historical student laundry logs used for readiness prediction</p>
+      <h5 class="mb-0 fw-bold text-primary">Recorded Laundry Dataset (<code><%= sourceLabel %></code>)</h5>
+      <p class="text-muted small mb-0">
+        Valid rows loaded: <strong><%= records.length %></strong> &bull; Skipped rows: <strong><%= skippedRows.length %></strong>
+      </p>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
-        <%= records ? records.length : 0 %> Records
-      </span>
-      <a href="/" class="btn btn-sm btn-outline-primary fw-semibold">+ New Entry / Predict</a>
+      <% if (sourceLabel === 'data.csv') { %>
+        <a href="/records?source=bad-rows" class="btn btn-sm btn-outline-warning fw-semibold">
+          Test Bad Rows (<code>test/bad-rows.tsv</code>)
+        </a>
+      <% } else { %>
+        <a href="/records" class="btn btn-sm btn-outline-secondary fw-semibold">
+          Back to <code>data.csv</code>
+        </a>
+      <% } %>
+      <a href="/outcome" class="btn btn-sm btn-outline-success fw-semibold">+ Record Outcome</a>
+      <a href="/" class="btn btn-sm btn-primary fw-semibold">Predict Readiness</a>
     </div>
   </div>
 
@@ -21,11 +53,12 @@
           <tr>
             <th class="ps-4">Student ID</th>
             <th>Token ID</th>
-            <th>Submission Date</th>
-            <th>Expected Date</th>
+            <th>Submitted</th>
+            <th>Expected</th>
             <th>Actual Ready</th>
-            <th>Collected Date</th>
-            <th class="text-center">Counter Visits</th>
+            <th>Collected</th>
+            <th class="text-center">Delay (Days)</th>
+            <th class="text-center">Visits</th>
             <th>Shop Closed?</th>
             <th>Ready on Visit?</th>
             <th class="pe-4">Notes</th>
@@ -41,6 +74,11 @@
                 <td><%= row.Expected_Collection_Date %></td>
                 <td><%= row.Actual_Ready_Date %></td>
                 <td><%= row.Actual_Collection_Date %></td>
+                <td class="text-center">
+                  <span class="badge <%= row.delayDays > 0 ? 'bg-warning-subtle text-warning-emphasis' : 'bg-success-subtle text-success' %>">
+                    <%= row.delayDays > 0 ? `+${row.delayDays}` : row.delayDays %>
+                  </span>
+                </td>
                 <td class="text-center"><%= row.Counter_Visits %></td>
                 <td>
                   <span class="badge <%= row.Found_Shop_Closed === 'Yes' ? 'bg-danger-subtle text-danger' : 'bg-light text-dark' %>">
@@ -57,7 +95,7 @@
             <% }) %>
           <% } else { %>
             <tr>
-              <td colspan="10" class="text-center text-muted py-4">No records found in data.csv</td>
+              <td colspan="11" class="text-center text-muted py-4">No valid records found.</td>
             </tr>
           <% } %>
         </tbody>
