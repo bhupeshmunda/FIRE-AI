@@ -1,0 +1,7 @@
+Student_ID	Token_ID	Submission_Date	Expected_Collection_Date	Actual_Ready_Date	Actual_Collection_Date	Counter_Visits	Found_Shop_Closed	Was_Ready_When_Visited	Notes
+S001	LT1001	2026-10-20	2026-10-23	2026-10-23	2026-10-24	2	No	No	Valid row 1.
+S901	LT9001	2026-10-20	2026-10-23	ONLY_FIVE_COLUMNS
+S902	LT9002	not-a-date	2026-10-24	2026-10-25	2026-10-25	2	No	No	Broken submission date.
+S903	LT9003	2026-10-22	2026-10-25		2026-10-26	1	No	Yes	Missing actual ready date.
+S904	LT9004	2026-10-25	2026-10-20	2026-10-26	2026-10-26	1	No	Yes	Negative expected duration (expected before submission).
+S905	LT9005	2026-10-25	2026-10-28	2026-10-27	2026-10-26	2	No	No	Negative pickup lag (collected before ready).
